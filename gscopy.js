@@ -35,9 +35,6 @@ async function main() {
   if (process.argv.length > 3) {
     outDir = process.argv[3];
   }
-  // if (!path.isAbsolute(outDir)) {
-  //   outDir = execDir + path.sep + outDir;
-  // }
 
   const stdout = execSync('git status', { cwd : execDir });
   let lines = stdout.toString().split(/\r\n|\r|\n/);
@@ -96,9 +93,13 @@ function confirm(msg) {
 function getChangeFile(line) {
   for (let statword of STATWORDS) {
     if (line.includes(statword.key)) {
+      let filePath = line.replace(statword.key, '').trim();
+      if (filePath.startsWith('..')) {
+        return false;
+      }
       return {
         stat: statword.stat,
-        filePath: line.replace(statword.key, '').trim(),
+        filePath: filePath,
       }
     }
   }
@@ -133,7 +134,7 @@ function execCopy(collectFiles, execDir, outDir) {
   for (let f of collectFiles) {
     let msg = `[${f.stat}][${f.filePath}]`;
     if (f.stat === 'DEL') {
-      console.log('\u001b[31m' + msg + '\u001b[0m');
+      console.log('\u001b[31m' + msg + '\u001b[0m'); // 赤字表示
       continue;
     }
     console.log(msg);
